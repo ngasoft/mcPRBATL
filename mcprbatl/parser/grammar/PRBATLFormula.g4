@@ -2,15 +2,24 @@ grammar PRBATLFormula;
 
 formulas : state_formula*;
 
-state_formula : enclosed_state_formula | top_state_formula | proposition | atl_state_formula | state_formula 'or' state_formula | not_state_formula;
+// state_formula : enclosed_state_formula | top_state_formula | proposition | atl_state_formula | state_formula 'or' state_formula | not_state_formula;
+state_formula : OPEN state_formula CLOSE | TOP | PROPOSITION | OPEN_AGENT agents '^' bound CLOSE_AGENT (PROB comp_op real_number )? path_formula | state_formula OR state_formula;
 
-enclosed_state_formula : '(' state_formula ')';
-top_state_formula : 'T';
-not_state_formula : 'not' state_formula;
+OPEN : '(';
+CLOSE : ')';
+TOP : 'T';
+PROPOSITION : NAME;
+OPEN_AGENT : '<<';
+CLOSE_AGENT : '>>';
+PROB : 'prob';
+OR : 'or';
+
+//enclosed_state_formula : '(' state_formula ')';
+//top_state_formula : 'T';
+//not_state_formula : 'not' state_formula;
 // or_state_formula : '(' state_formula 'or' state_formula ')';
-atl_state_formula : '<<' agents '^' bound '>>' ('prob' comp_op real_number)? path_formula;
-
-proposition : NAME;
+//atl_state_formula : '<<' agents '^' bound '>>' ('prob' comp_op real_number)? path_formula;
+//proposition : NAME;
 
 agents : '{' (agent (',' agent)*)? '}';
 agent: POSITIVE_NUMBER;
