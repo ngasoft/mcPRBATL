@@ -26,51 +26,6 @@ class PRBATLFormulaListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by PRBATLFormulaParser#enclosed_state_formula.
-    def enterEnclosed_state_formula(self, ctx:PRBATLFormulaParser.Enclosed_state_formulaContext):
-        pass
-
-    # Exit a parse tree produced by PRBATLFormulaParser#enclosed_state_formula.
-    def exitEnclosed_state_formula(self, ctx:PRBATLFormulaParser.Enclosed_state_formulaContext):
-        pass
-
-
-    # Enter a parse tree produced by PRBATLFormulaParser#top_state_formula.
-    def enterTop_state_formula(self, ctx:PRBATLFormulaParser.Top_state_formulaContext):
-        pass
-
-    # Exit a parse tree produced by PRBATLFormulaParser#top_state_formula.
-    def exitTop_state_formula(self, ctx:PRBATLFormulaParser.Top_state_formulaContext):
-        pass
-
-
-    # Enter a parse tree produced by PRBATLFormulaParser#not_state_formula.
-    def enterNot_state_formula(self, ctx:PRBATLFormulaParser.Not_state_formulaContext):
-        pass
-
-    # Exit a parse tree produced by PRBATLFormulaParser#not_state_formula.
-    def exitNot_state_formula(self, ctx:PRBATLFormulaParser.Not_state_formulaContext):
-        pass
-
-
-    # Enter a parse tree produced by PRBATLFormulaParser#atl_state_formula.
-    def enterAtl_state_formula(self, ctx:PRBATLFormulaParser.Atl_state_formulaContext):
-        pass
-
-    # Exit a parse tree produced by PRBATLFormulaParser#atl_state_formula.
-    def exitAtl_state_formula(self, ctx:PRBATLFormulaParser.Atl_state_formulaContext):
-        pass
-
-
-    # Enter a parse tree produced by PRBATLFormulaParser#proposition.
-    def enterProposition(self, ctx:PRBATLFormulaParser.PropositionContext):
-        pass
-
-    # Exit a parse tree produced by PRBATLFormulaParser#proposition.
-    def exitProposition(self, ctx:PRBATLFormulaParser.PropositionContext):
-        pass
-
-
     # Enter a parse tree produced by PRBATLFormulaParser#agents.
     def enterAgents(self, ctx:PRBATLFormulaParser.AgentsContext):
         pass
