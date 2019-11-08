@@ -1,0 +1,4 @@
+T
+p or q
+not p or q
+<< {1,2}^(1,*) >> prob >= 0.9 Next (p or q)

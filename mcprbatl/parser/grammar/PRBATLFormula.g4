@@ -2,7 +2,7 @@ grammar PRBATLFormula;
 
 formulas : state_formula*;
 
-state_formula : enclosed_state_formula | top_state_formula | proposition | atl_state_formula | not_state_formula | state_formula 'or' state_formula ;
+state_formula : enclosed_state_formula | top_state_formula | proposition | atl_state_formula | state_formula 'or' state_formula | not_state_formula;
 
 enclosed_state_formula : '(' state_formula ')';
 top_state_formula : 'T';

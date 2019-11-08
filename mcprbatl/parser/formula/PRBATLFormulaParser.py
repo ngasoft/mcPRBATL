@@ -2,7 +2,7 @@
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
-from typing.io import TextIO
+from typing import TextIO
 import sys
 
 
@@ -33,7 +33,7 @@ def serializedATN():
         buf.write("\2\2\2\60\3\3\2\2\2\61/\3\2\2\2\62\63\b\3\1\2\639\5\6")
         buf.write("\4\2\649\5\b\5\2\659\5\16\b\2\669\5\f\7\2\679\5\n\6\2")
         buf.write("8\62\3\2\2\28\64\3\2\2\28\65\3\2\2\28\66\3\2\2\28\67\3")
-        buf.write("\2\2\29?\3\2\2\2:;\f\3\2\2;<\7\3\2\2<>\5\4\3\4=:\3\2\2")
+        buf.write("\2\2\29?\3\2\2\2:;\f\4\2\2;<\7\3\2\2<>\5\4\3\5=:\3\2\2")
         buf.write("\2>A\3\2\2\2?=\3\2\2\2?@\3\2\2\2@\5\3\2\2\2A?\3\2\2\2")
         buf.write("BC\7\4\2\2CD\5\4\3\2DE\7\5\2\2E\7\3\2\2\2FG\7\6\2\2G\t")
         buf.write("\3\2\2\2HI\7\7\2\2IJ\5\4\3\2J\13\3\2\2\2KL\7\b\2\2LM\5")
@@ -297,13 +297,13 @@ class PRBATLFormulaParser ( Parser ):
                     localctx = PRBATLFormulaParser.State_formulaContext(self, _parentctx, _parentState)
                     self.pushNewRecursionContext(localctx, _startState, self.RULE_state_formula)
                     self.state = 56
-                    if not self.precpred(self._ctx, 1):
+                    if not self.precpred(self._ctx, 2):
                         from antlr4.error.Errors import FailedPredicateException
-                        raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
+                        raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
                     self.state = 57
                     self.match(PRBATLFormulaParser.T__0)
                     self.state = 58
-                    self.state_formula(2) 
+                    self.state_formula(3) 
                 self.state = 63
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
@@ -1305,7 +1305,7 @@ class PRBATLFormulaParser ( Parser ):
 
     def state_formula_sempred(self, localctx:State_formulaContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 1)
+                return self.precpred(self._ctx, 2)
          
 
 

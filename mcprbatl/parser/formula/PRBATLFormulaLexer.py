@@ -1,7 +1,7 @@
 # Generated from C:/Users/ac1222/OneDrive - Coventry University/GitHub/mcPRBATL/mcprbatl/parser/grammar\PRBATLFormula.g4 by ANTLR 4.7.2
 from antlr4 import *
 from io import StringIO
-from typing.io import TextIO
+from typing import TextIO
 import sys
 
 
