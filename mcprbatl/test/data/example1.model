@@ -2,7 +2,7 @@ Structure Example1 = {
     2, # number of agents
     2, # number of resources
     { q1, q2, q3, q4 }, # states
-    {p,r}, # propositions
+    {p,q,r}, # propositions
     { # labelling function
         p -> {q1,q2},
         q -> {q3,q4}
