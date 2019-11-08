@@ -67,7 +67,7 @@ class ModelLoader(CGSModelListener):
 
     def exitCosting(self, ctx:CGSModelParser.CostingContext):
         state = ctx.gstate().NAME().getText()
-        ctx_cost = ctx.cost();
+        ctx_cost = ctx.cost()
         c = [ModelLoader.getNumber(n) for n in ctx_cost.children if isinstance(n,CGSModelParser.NumberContext)]
         c = c[0:self.model.r]
         c.extend([0]*(self.model.r - len(c)))

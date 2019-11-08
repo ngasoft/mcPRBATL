@@ -2,7 +2,8 @@ grammar PRBATLFormula;
 
 formulas : state_formula*;
 
-state_formula : OPEN state_formula CLOSE | TOP | NOT state_formula | PROPOSITION | state_formula OR state_formula | OPEN_AGENT agents '^' bound CLOSE_AGENT (PROB comp_op real_number )? path_formula ;
+state_formula : OPEN state_formula CLOSE | TOP | NOT state_formula | PROPOSITION | state_formula OR state_formula |
+                OPEN_AGENT agents '^' bound CLOSE_AGENT (PROB comp_op real_number )? path_formula ;
 
 agents : '{' (agent (',' agent)*)? '}';
 agent: POSITIVE_NUMBER;

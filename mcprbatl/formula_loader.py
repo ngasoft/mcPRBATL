@@ -29,35 +29,7 @@ class FormulaLoader(PRBATLFormulaListener):
         for ctx_f in ctx.getTypedRuleContexts(PRBATLFormulaParser.State_formulaContext):
             self.formulas.append(self.attachment[ctx_f])
 
-    def exitEnclosed_state_formula(self, ctx: PRBATLFormulaParser.Enclosed_state_formulaContext):
-        self.attachment[ctx] = self.attachment[ctx.state_formula()]
-
-    def exitTop_state_formula(self, ctx: PRBATLFormulaParser.Top_state_formulaContext):
-        f = TopFormula()
-        self.attachment[ctx] = f
-
-    def exitProposition(self, ctx: PRBATLFormulaParser.PropositionContext):
-        f = PropositionFormula(ctx.NAME().getText())
-        self.attachment[ctx] = f
-
-    def exitAtl_state_formula(self, ctx: PRBATLFormulaParser.Atl_state_formulaContext):
-        ctx_agents = ctx.agents()
-        ctx_bound = ctx.bound()
-        ctx_com_op = ctx.comp_op()
-        ctx_prob = ctx.real_number()
-        ctx_path_formula = ctx.path_formula()
-
-        agents = self.attachment[ctx_agents]
-        bound = self.attachment[ctx_bound]
-        comp_op = ComOp.GEQ
-        prob = 1.0
-        if ctx_com_op and ctx_prob:
-            comp_op = self.attachment[ctx_com_op]
-            prob = self.attachment[ctx_prob]
-        path_formula = self.attachment[ctx_path_formula]
-        self.attachment[ctx] = ATLFormula(agents, bound, comp_op, prob, path_formula)
-
-    def exitAgents(self, ctx: PRBATLFormulaParser.AgentsContext):
+    def exitAgents(self, ctx:PRBATLFormulaParser.AgentsContext):
         agents = set()
         for a in ctx.getTypedRuleContexts(PRBATLFormulaParser.AgentContext):
             agents.add(self.attachment[a])
@@ -126,21 +98,30 @@ class FormulaLoader(PRBATLFormulaListener):
         else:
             self.attachment[ctx] = UntilFormula(f1, f2)
 
-    def exitNot_state_formula(self, ctx:PRBATLFormulaParser.Not_state_formulaContext):
-        self.attachment[ctx] = NegationFormula(self.attachment[ctx.state_formula()])
-
     def exitState_formula(self, ctx: PRBATLFormulaParser.State_formulaContext):
-        if ctx.enclosed_state_formula():
-            self.attachment[ctx] = self.attachment[ctx.enclosed_state_formula()]
-        elif ctx.top_state_formula():
-            self.attachment[ctx] = self.attachment[ctx.top_state_formula()]
-        elif ctx.proposition():
-            self.attachment[ctx] = self.attachment[ctx.proposition()]
-        elif ctx.atl_state_formula():
-            self.attachment[ctx] = self.attachment[ctx.atl_state_formula()]
-        elif ctx.not_state_formula():
-            self.attachment[ctx] = self.attachment[ctx.not_state_formula()]
-        else:
-            f1 = ctx.state_formula(0)
-            f2 = ctx.state_formula(1)
-            self.attachment[ctx] = OrFormula(self.attachment[f1], self.attachment[f2])
+        if ctx.OPEN():
+            self.attachment[ctx] = self.attachment[ctx.state_formula(0)]
+        elif ctx.TOP():
+            self.attachment[ctx] = TopFormula()
+        elif ctx.NOT():
+            self.attachment[ctx] = NegationFormula(self.attachment[ctx.state_formula(0)])
+        elif ctx.PROPOSITION():
+            self.attachment[ctx] = PropositionFormula(ctx.PROPOSITION().getText())
+        elif ctx.OR():
+            self.attachment[ctx] = OrFormula(self.attachment[ctx.state_formula(0)], self.attachment[ctx.state_formula(1)])
+        elif ctx.OPEN_AGENT():
+            ctx_agents = ctx.agents()
+            ctx_bound = ctx.bound()
+            ctx_com_op = ctx.comp_op()
+            ctx_prob = ctx.real_number()
+            ctx_path_formula = ctx.path_formula()
+
+            agents = self.attachment[ctx_agents]
+            bound = self.attachment[ctx_bound]
+            comp_op = ComOp.GEQ
+            prob = 1.0
+            if ctx_com_op and ctx_prob:
+                comp_op = self.attachment[ctx_com_op]
+                prob = self.attachment[ctx_prob]
+            path_formula = self.attachment[ctx_path_formula]
+            self.attachment[ctx] = ATLFormula(agents, bound, comp_op, prob, path_formula)
