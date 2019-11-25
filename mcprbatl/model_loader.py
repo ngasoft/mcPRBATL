@@ -100,7 +100,7 @@ class ModelLoader(CGSModelListener):
         if sum > 0:
             for next_state in dist:
                 dist[next_state] /= sum
-        self.model.sigma[state][str(move)] = dist
+        self.model.delta[state][str(move)] = dist
 
 
 
