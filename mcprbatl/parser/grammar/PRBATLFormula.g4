@@ -14,7 +14,7 @@ infinite : '*';
 
 comp_op : LT_OP | LEQ_OP | GEQ_OP | GT_OP;
 
-path_formula : next_formula | until_formula | neg_path_formula;
+path_formula : OPEN path_formula CLOSE | next_formula | until_formula | neg_path_formula;
 next_formula : 'Next' state_formula;
 until_formula : state_formula (finite_until | infinite_until) state_formula;
 finite_until : 'Until^' number ;

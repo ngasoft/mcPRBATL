@@ -76,7 +76,9 @@ class FormulaLoader(PRBATLFormulaListener):
             self.attachment[ctx] = float(ctx.POSITIVE_REAL_NUMBER().getText())
 
     def exitPath_formula(self, ctx: PRBATLFormulaParser.Path_formulaContext):
-        if ctx.next_formula():
+        if ctx.OPEN():
+            self.attachment[ctx] = self.attachment[ctx.path_formula()]
+        elif ctx.next_formula():
             self.attachment[ctx] = self.attachment[ctx.next_formula()]
         elif ctx.neg_path_formula():
             self.attachment[ctx] = self.attachment[ctx.neg_path_formula()]
@@ -94,7 +96,7 @@ class FormulaLoader(PRBATLFormulaListener):
         f2 = self.attachment[ctx.state_formula(1)]
         if ctx.finite_until():
             n = self.attachment[ctx.finite_until().number()]
-            self.attachment[ctx] = UntilFormula(n, f1, f2)
+            self.attachment[ctx] = UntilFormula(f1, f2, n)
         else:
             self.attachment[ctx] = UntilFormula(f1, f2)
 
