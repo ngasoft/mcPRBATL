@@ -111,11 +111,10 @@ class PathFormula:
     def pr_min(self, model:Model, state, agents, bound) -> float:
         raise NotImplementedError()
 
-    def pr_max_min(self, model:Model, state, agents, bound, X, min_mode=False) -> float:
+    def pr_max_min(self, model:Model, state, agents, bound, sub_sat, X, min_mode=False) -> float:
         maximum = -float('inf') if not min_mode else float('inf')
         proponent_moves = model.D(agents, state)
         opponents = model.all_agents().difference(agents)
-        sub_sat = self.sub.sat(model)
         for p_m in proponent_moves:
             c = model.move_cost(agents, state, p_m)
             if model.cost_leq(c, bound):
@@ -124,14 +123,15 @@ class PathFormula:
                 minimum = None
                 for o_m in opponent_moves:
                     minimum = +float('inf') if not min_mode else -float('inf')
-                    m = {**p_m, ** o_m}
+                    m = model.combine_move(p_m, o_m)
                     m_list = [m[i] for i in range(1, model.n+1)]
                     pr = 0.0
                     for t in sub_sat:
-                        x = 1
-                        if str(bound1) in X[t]:
-                            x = X[t][str(bound1)]
-                        pr += model.delta[state][str(m_list)][t] * x
+                        x = X[t][str(bound1)]
+                        tran = 1.0
+                        if state in model.delta and str(m_list) in model.delta[state] and t in model.delta[state][str(m_list)]:
+                            tran = model.delta[state][str(m_list)][t]
+                        pr += tran * x
                     if (pr < minimum and not min_mode) or (pr > minimum and min_mode):
                         minimum = pr
                 if (minimum > maximum and not min_mode) or (minimum < maximum and min_mode):
@@ -151,16 +151,21 @@ class NextFormula(PathFormula):
 
     def pr_max(self, model:Model, state, agents, bound) -> float:
         X = dict()
+        bounds = model.bounds_leq(bound)
         for s in model.Q:
             X[s] = dict()
-        return self.pr_max_min(model, state, agents, bound, X)
+            for b in bounds:
+                X[s][str(b)] = 0
+        sub_sat = self.sub.sat(model)
+        return self.pr_max_min(model, state, agents, bound, sub_sat, X)
 
 
     def pr_min(self, model: Model, state, agents, bound) -> float:
         X = dict()
         for s in model.Q:
             X[s] = dict()
-        return self.pr_max_min(model, state, agents, bound, X, True)
+        sub_sat = self.sub.sat(model)
+        return self.pr_max_min(model, state, agents, bound, X, sub_sat, True)
 
 
 
@@ -189,7 +194,7 @@ class UntilFormula(PathFormula):
             for s in model.Q:
                 X1[s] = dict()
                 for b in bounds:
-                    X1[s][str(b)] = self.pr_max_min(model, state, agents, bound, X)
+                    X1[s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X)
             if model.is_different(X1, X):
                 X = X1
             else:
@@ -209,7 +214,7 @@ class UntilFormula(PathFormula):
             for s in model.Q:
                 X1[s] = dict()
                 for b in bounds:
-                    X1[s][str(b)] = self.pr_max_min(model, state, agents, bound, X, True)
+                    X1[s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X, True)
             if model.is_different(X1, X):
                 X = X1
             else:
@@ -231,7 +236,7 @@ class UntilFormula(PathFormula):
                 for s in model.Q:
                     X1[i][s] = dict()
                     for b in bounds:
-                        X1[i][s][str(b)] = self.pr_max_min(model, state, agents, bound, X[i-1])
+                        X1[i][s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X[i-1])
             if model.is_different_k(self.k, X1, X):
                 X = X1
             else:
@@ -253,7 +258,7 @@ class UntilFormula(PathFormula):
                 for s in model.Q:
                     X1[i][s] = dict()
                     for b in bounds:
-                        X1[i][s][str(b)] = self.pr_max_min(model, state, agents, bound, X[i], True)
+                        X1[i][s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X[i], True)
             if model.is_different_k(self.k, X1, X):
                 X = X1
             else:

@@ -82,8 +82,8 @@ class ModelLoader(CGSModelListener):
 
     def exitTransition(self, ctx:CGSModelParser.TransitionContext):
         state = ctx.gstate().NAME().getText()
-        if state not in self.model.sigma:
-            self.model.sigma[state] = dict()
+        if state not in self.model.delta:
+            self.model.delta[state] = dict()
         ctx_move:CGSModelParser.MoveContext = ctx.move()
         move = [ModelLoader.getNumber(n) for n in ctx_move.children if isinstance(n,CGSModelParser.Positive_numberContext)]
         move = move[0:self.model.n]

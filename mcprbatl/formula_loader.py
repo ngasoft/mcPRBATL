@@ -43,7 +43,7 @@ class FormulaLoader(PRBATLFormulaListener):
         for b in ctx.getTypedRuleContexts(PRBATLFormulaParser.Bound_numberContext):
             v = self.attachment[b]
             bound.append(v)
-        self.attachment[ctx] = bound
+        self.attachment[ctx] = tuple(bound)
 
     def exitBound_number(self, ctx: PRBATLFormulaParser.Bound_numberContext):
         if ctx.infinite():
