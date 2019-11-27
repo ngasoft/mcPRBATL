@@ -19,3 +19,9 @@
 << {1,2}^(2,2) >> prob >= 0.8 (T Until safe)
 << {1,2}^(2,3) >> prob >= 0.9 (T Until safe)
 << {1,2}^(2,4) >> prob >= 0.99 (T Until safe)
+<< {1,2}^(0,0) >> prob >= 0.99 (Next destroyed)
+<< {1,2}^(0,0) >> prob =< 0.99 (Next destroyed)
+<< {1,2}^(0,0) >> prob =< 1.00 (Next destroyed)
+<< {1,2}^(0,0) >> prob =< 0 (Next destroyed)
+<< {1,2}^(0,0) >> prob >= 0.99 not (Next destroyed)
+<< {1,2}^(0,0) >> prob >= 1 not (Next destroyed) # cannot cooperate to force destroyed in the next state, should only be true in q3

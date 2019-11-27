@@ -142,25 +142,17 @@ class NextFormula(PathFormula):
 
     def pr_max(self, model: Model, agents, bound):
         X = dict()
-        bounds = model.bounds_leq(bound)
         sub_sat = self.sub.sat(model)
         for s in model.Q:
-            X[s] = 1.0 if s in sub_sat else 0.0
-        X1 = dict()
-        for s in model.Q:
-            X[s] = model.pr_max_min(s, agents, bound, sub_sat, X)
-        return X1
+            X[s] = model.pr_next_max_min(s, agents, bound, sub_sat)
+        return X
 
     def pr_min(self, model: Model, agents, bound):
         X = dict()
-        bounds = model.bounds_leq(bound)
         sub_sat = self.sub.sat(model)
         for s in model.Q:
-            X[s] = 1.0 if s in sub_sat else 0.0
-        X1 = dict()
-        for s in model.Q:
-            X[s] = model.pr_max_min(s, agents, bound, sub_sat, X, True)
-        return X1
+            X[s] = model.pr_next_max_min(s, agents, bound, sub_sat, True)
+        return X
 
     def sat_geq(self, model, agents, bound, prob: float):
         X = self.pr_max(model, agents, bound)
@@ -361,7 +353,7 @@ class ATLFormula(Formula):
         self.path_formula = path_formula
 
     def sat(self, model: Model) -> set:
-        if self.path_formula is NegPathFormula:
+        if isinstance(self.path_formula, NegPathFormula):
             f = ATLFormula(self.agents, self.bound, ComOp.reverse(self.comp_op), 1-self.prob, self.path_formula.sub)
             return f.sat(model)
 
@@ -379,7 +371,7 @@ class ATLFormula(Formula):
     def to_string(self, enclosed=False):
         ag = "{" + ",".join([str(i) for i in self.agents]) + "}"
         bd = "^(" + ",".join([str(i) for i in self.bound]) + ")" if self.bound else ""
-        pr = " pr " + ComOp.to_string(self.comp_op) + str(self.prob)
+        pr = " prob " + ComOp.to_string(self.comp_op) + " " + str(self.prob)
         s = "<< " + ag + bd + " >>" + pr + " " + self.path_formula.to_string(True)
         if enclosed:
             s = "(" + s + ")"
