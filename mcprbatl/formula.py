@@ -40,13 +40,16 @@ class Formula:
     def sat(self, model: Model) -> set:
         pass
 
+    def __str__(self):
+        return self.to_string()
+
 
 class TopFormula(Formula):
     def __init__(self):
         pass
 
     def to_string(self, enclosed=False):
-        s = ""
+        s = "T"
         if enclosed:
             s = "(" + s + ")"
         return s
@@ -105,38 +108,26 @@ class PathFormula:
     def to_string(self, enclosed=False) -> str:
         raise NotImplementedError()
 
-    def pr_max(self, model:Model, state, agents, bound) -> float:
+    def __str__(self):
+        return self.to_string()
+
+    def pr_max(self, model: Model, agents, bound):
         raise NotImplementedError()
 
-    def pr_min(self, model:Model, state, agents, bound) -> float:
+    def pr_min(self, model: Model, agents, bound):
         raise NotImplementedError()
 
-    def pr_max_min(self, model:Model, state, agents, bound, sub_sat, X, min_mode=False) -> float:
-        maximum = -float('inf') if not min_mode else float('inf')
-        proponent_moves = model.D(agents, state)
-        opponents = model.all_agents().difference(agents)
-        for p_m in proponent_moves:
-            c = model.move_cost(agents, state, p_m)
-            if model.cost_leq(c, bound):
-                bound1 = model.cost_minus(bound, c)
-                opponent_moves = model.D(opponents, state)
-                minimum = None
-                for o_m in opponent_moves:
-                    minimum = +float('inf') if not min_mode else -float('inf')
-                    m = model.combine_move(p_m, o_m)
-                    m_list = [m[i] for i in range(1, model.n+1)]
-                    pr = 0.0
-                    for t in sub_sat:
-                        x = X[t][str(bound1)]
-                        tran = 1.0
-                        if state in model.delta and str(m_list) in model.delta[state] and t in model.delta[state][str(m_list)]:
-                            tran = model.delta[state][str(m_list)][t]
-                        pr += tran * x
-                    if (pr < minimum and not min_mode) or (pr > minimum and min_mode):
-                        minimum = pr
-                if (minimum > maximum and not min_mode) or (minimum < maximum and min_mode):
-                    maximum = minimum
-        return maximum
+    def sat_geq(self, model, agents, bound, prob: float):
+        raise NotImplementedError()
+
+    def sat_gt(self, model, agents, bound, prob: float):
+        raise NotImplementedError()
+
+    def sat_leq(self, model, agents, bound, prob: float):
+        raise NotImplementedError()
+
+    def sat_lt(self, model, agents, bound, prob: float):
+        raise NotImplementedError()
 
 
 class NextFormula(PathFormula):
@@ -149,24 +140,47 @@ class NextFormula(PathFormula):
             s = "(" + s + ")"
         return s
 
-    def pr_max(self, model:Model, state, agents, bound) -> float:
+    def pr_max(self, model: Model, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
-        for s in model.Q:
-            X[s] = dict()
-            for b in bounds:
-                X[s][str(b)] = 0
         sub_sat = self.sub.sat(model)
-        return self.pr_max_min(model, state, agents, bound, sub_sat, X)
+        for s in model.Q:
+            X[s] = 1.0 if s in sub_sat else 0.0
+        X1 = dict()
+        for s in model.Q:
+            X[s] = model.pr_max_min(s, agents, bound, sub_sat, X)
+        return X1
 
-
-    def pr_min(self, model: Model, state, agents, bound) -> float:
+    def pr_min(self, model: Model, agents, bound):
         X = dict()
-        for s in model.Q:
-            X[s] = dict()
+        bounds = model.bounds_leq(bound)
         sub_sat = self.sub.sat(model)
-        return self.pr_max_min(model, state, agents, bound, X, sub_sat, True)
+        for s in model.Q:
+            X[s] = 1.0 if s in sub_sat else 0.0
+        X1 = dict()
+        for s in model.Q:
+            X[s] = model.pr_max_min(s, agents, bound, sub_sat, X, True)
+        return X1
 
+    def sat_geq(self, model, agents, bound, prob: float):
+        X = self.pr_max(model, agents, bound)
+        ret = {q for q in model.Q if X[q] >= prob}
+        return ret
+
+    def sat_gt(self, model, agents, bound, prob: float):
+        X = self.pr_max(model, agents, bound)
+        ret = {q for q in model.Q if X[q] > prob}
+        return ret
+
+    def sat_lt(self, model, agents, bound, prob: float):
+        X = self.pr_min(model, agents, bound)
+        ret = {q for q in model.Q if X[q] < prob}
+        return ret
+
+    def sat_leq(self, model, agents, bound, prob: float):
+        X = self.pr_min(model, agents, bound)
+        ret = {q for q in model.Q if X[q] <= prob}
+        return ret
 
 
 class UntilFormula(PathFormula):
@@ -181,47 +195,73 @@ class UntilFormula(PathFormula):
             s = "(" + s + ")"
         return s
 
-    def pr_max_inf(self, model:Model, state, agents, bound) -> float:
+    def pr_max_inf(self, model: Model, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
+        sat_1 = self.sub1.sat(model)
+        sat_2 = self.sub2.sat(model)
+        sat_1_2 = sat_1.union(sat_2)
         for s in model.Q:
             X[s] = dict()
             for b in bounds:
-                X[s][str(b)] = 0
+                if s in sat_2:
+                    X[s][str(b)] = 1.0
+                elif s not in sat_1_2:
+                    X[s][str(b)] = 0.0
+                else:
+                    X[s][str(b)] = 0.0
 
         while True:
             X1 = dict()
             for s in model.Q:
                 X1[s] = dict()
                 for b in bounds:
-                    X1[s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X)
+                    if s in sat_2:
+                        X1[s][str(b)] = 1.0
+                    elif s not in sat_1_2:
+                        X1[s][str(b)] = 0.0
+                    else:
+                        X1[s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X)
             if model.is_different(X1, X):
                 X = X1
             else:
                 break
-        return X[state][str(bound)]
+        return X
 
-    def pr_min_inf(self, model:Model, state, agents, bound) -> float:
+    def pr_min_inf(self, model: Model, state, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
+        sat_1 = self.sub1.sat(model)
+        sat_2 = self.sub2.sat(model)
+        sat_1_2 = sat_1.union(sat_2)
         for s in model.Q:
             X[s] = dict()
             for b in bounds:
-                X[s][str(b)] = 1
+                if s in sat_2:
+                    X[s][str(b)] = 1.0
+                elif s not in sat_1_2:
+                    X[s][str(b)] = 0.0
+                else:
+                    X[s][str(b)] = 1.0
 
         while True:
             X1 = dict()
             for s in model.Q:
                 X1[s] = dict()
                 for b in bounds:
-                    X1[s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X, True)
+                    if s in sat_2:
+                        X1[s][str(b)] = 1.0
+                    elif s not in sat_1_2:
+                        X1[s][str(b)] = 0.0
+                    else:
+                        X1[s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X, True)
             if model.is_different(X1, X):
                 X = X1
             else:
                 break
-        return X[state][str(bound)]
+        return X
 
-    def pr_max_fin(self, model:Model, state, agents, bound) -> float:
+    def pr_max_fin(self, model: Model, agents, bound):
         X = [dict() for i in range(self.k+1)]
         bounds = model.bounds_leq(bound)
         for i in range(self.k + 1):
@@ -236,14 +276,14 @@ class UntilFormula(PathFormula):
                 for s in model.Q:
                     X1[i][s] = dict()
                     for b in bounds:
-                        X1[i][s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X[i-1])
+                        X1[i][s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X[i-1])
             if model.is_different_k(self.k, X1, X):
                 X = X1
             else:
                 break
-        return X[self.k][state][str(bound)]
+        return X
 
-    def pr_min_fin(self, model:Model, state, agents, bound) -> float:
+    def pr_min_fin(self, model: Model, agents, bound):
         X = [dict() for i in range(1, self.k+1)]
         bounds = model.bounds_leq(bound)
         for i in range(self.k + 1):
@@ -258,24 +298,48 @@ class UntilFormula(PathFormula):
                 for s in model.Q:
                     X1[i][s] = dict()
                     for b in bounds:
-                        X1[i][s][str(b)] = self.pr_max_min(model, state, agents, bound, model.Q, X[i], True)
+                        X1[i][s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X[i], True)
             if model.is_different_k(self.k, X1, X):
                 X = X1
             else:
                 break
-        return X[self.k][state][str(bound)]
+        return X
 
-    def pr_max(self, model:Model, state, agents, bound) -> float:
+    def pr_max(self, model: Model, agents, bound):
         if self.k != float('inf'):
-            return self.pr_max_fin(model, state, agents, bound)
+            return self.pr_max_fin(model, agents, bound)
         else:
-            return self.pr_max_inf(model, state, agents, bound)
+            return self.pr_max_inf(model, agents, bound)
 
-    def pr_min(self, model:Model, state, agents, bound) -> float:
+    def pr_min(self, model:Model, agents, bound):
         if self.k != float('inf'):
-            return self.pr_min_fin(model, state, agents, bound)
+            return self.pr_min_fin(model, agents, bound)
         else:
-            return self.pr_min_inf(model, state, agents, bound)
+            return self.pr_min_inf(model, agents, bound)
+
+    def sat_geq(self, model, agents, bound, prob: float):
+        X = self.pr_max(model, agents, bound)
+        Y = X if self.k == float('inf') else X[self.k]
+        ret = {q for q in model.Q if Y[q][str(bound)] >= prob}
+        return ret
+
+    def sat_gt(self, model, agents, bound, prob: float):
+        X = self.pr_max(model, agents, bound)
+        Y = X if self.k == float('inf') else X[self.k]
+        ret = {q for q in model.Q if Y[q][str(bound)] > prob}
+        return ret
+
+    def sat_lt(self, model, agents, bound, prob: float):
+        X = self.pr_min(model, agents, bound)
+        Y = X if self.k == float('inf') else X[self.k]
+        ret = {q for q in model.Q if Y[q][str(bound)] < prob}
+        return ret
+
+    def sat_leq(self, model, agents, bound, prob: float):
+        X = self.pr_min(model, agents, bound)
+        Y = X if self.k == float('inf') else X[self.k]
+        ret = {q for q in model.Q if Y[q][str(bound)] <= prob}
+        return ret
 
 
 class NegPathFormula(PathFormula):
@@ -301,21 +365,16 @@ class ATLFormula(Formula):
             f = ATLFormula(self.agents, self.bound, ComOp.reverse(self.comp_op), 1-self.prob, self.path_formula.sub)
             return f.sat(model)
 
-        r = set()
-        for q in model.Q:
-            if self.comp_op == ComOp.GEQ:
-                if self.path_formula.pr_max(model, q, self.agents, self.bound) >= self.prob:
-                    r.add(q)
-            elif self.comp_op == ComOp.GT:
-                if self.path_formula.pr_max(model, q, self.agents, self.bound) > self.prob:
-                    r.add(q)
-            if self.comp_op == ComOp.LEQ:
-                if self.path_formula.pr_min(model, q, self.agents, self.bound) <= self.prob:
-                    r.add(q)
-            elif self.comp_op == ComOp.LT:
-                if self.path_formula.pr_min(model, q, self.agents, self.bound) < self.prob:
-                    r.add(q)
-        return r
+        if self.comp_op == ComOp.GEQ:
+            return self.path_formula.sat_geq(model, self.agents, self.bound, self.prob)
+        elif self.comp_op == ComOp.GT:
+            return self.path_formula.sat_gt(model, self.agents, self.bound, self.prob)
+        if self.comp_op == ComOp.LEQ:
+            return self.path_formula.sat_leq(model, self.agents, self.bound, self.prob)
+        elif self.comp_op == ComOp.LT:
+            return self.path_formula.sat_lt(model, self.agents, self.bound, self.prob)
+
+        raise Exception("unknown comparison operator")
 
     def to_string(self, enclosed=False):
         ag = "{" + ",".join([str(i) for i in self.agents]) + "}"
