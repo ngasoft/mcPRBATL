@@ -2,9 +2,9 @@ import mcprbatl.model_loader as model_loader
 import mcprbatl.formula_loader as formula_loader
 
 model_file = "data/journal-ex1.model"
-formulas_file = "data/journal-ex1-test1.formulas"
+#formulas_file = "data/journal-ex1-test1.formulas"
 #formulas_file = "data/journal-ex1-test2.formulas"
-#formulas_file = "data/journal-ex1-test3.formulas"
+formulas_file = "data/journal-ex1-test3.formulas"
 loader = model_loader.ModelLoader(model_file)
 m = loader.load()
 # print(m)
@@ -18,8 +18,8 @@ for f in fs:
     print(s)
 
 #print("Table 1 in IJCAI'19 paper")
-#f = fs[5]
-#print(f.path_formula.pr_max(m, f.agents, f.bound)['q0'])
+f = fs[62]
+print(f.path_formula.pr_max(m, f.agents, f.bound)['q0'])
 
 #print("Table 2 in IJCAI'19 paper")
 #f = fs[20]
