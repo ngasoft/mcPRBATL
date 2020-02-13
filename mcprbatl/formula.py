@@ -213,7 +213,16 @@ class UntilFormula(PathFormula):
                     elif s not in sat_1_2:
                         X1[s][str(b)] = 0.0
                     else:
+                        if s=='q3' and str(b)=='(1, 2)':
+                            print('BREAK HERE')
                         X1[s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X)
+
+            for s in model.Q:
+                for b in bounds:
+                    if X[s][str(b)]!=X1[s][str(b)]:
+                        print('{state}, {str_b}: {old_X} => {new_X}'.format(state=s, str_b=str(b),
+                                                                            old_X=X[s][str(b)], new_X=X1[s][str(b)]))
+
             if model.is_different(X1, X):
                 X = X1
             else:
@@ -247,6 +256,7 @@ class UntilFormula(PathFormula):
                         X1[s][str(b)] = 0.0
                     else:
                         X1[s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X, True)
+
             if model.is_different(X1, X):
                 X = X1
             else:

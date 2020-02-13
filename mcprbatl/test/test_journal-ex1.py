@@ -2,9 +2,9 @@ import mcprbatl.model_loader as model_loader
 import mcprbatl.formula_loader as formula_loader
 
 model_file = "data/journal-ex1.model"
-formulas_file = "data/journal-ex1-test1.formulas"
+#formulas_file = "data/journal-ex1-test1.formulas"
 #formulas_file = "data/journal-ex1-test2.formulas"
-#formulas_file = "data/journal-ex1-test3.formulas"
+formulas_file = "data/journal-ex1-test3.formulas"
 loader = model_loader.ModelLoader(model_file)
 m = loader.load()
 # print(m)
