@@ -6,6 +6,7 @@
 << {1}^(1,0) >> prob >= 0.8 (T Until lowburnt)
 << {1}^(1,1) >> prob >= 0.8 (T Until lowburnt)
 << {1}^(1,2) >> prob >= 0.8 (T Until lowburnt)
+<< {1}^(1,2) >> prob >= 0.9 (T Until lowburnt)
 #the best strategy for two agents to help the building to be saved with lowburnt is to choose their best strategies concurrently <w=2,e=4>
 << {1,2}^(0,0) >> prob >= 0.8 (T Until lowburnt)
 << {1,2}^(0,1) >> prob >= 0.8 (T Until lowburnt)
