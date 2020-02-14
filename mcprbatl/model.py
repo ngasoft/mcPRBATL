@@ -32,7 +32,7 @@ class Model:
             if self.d[state][a] > m[a]:
                 m[a] += 1
                 return m
-            m[a] = 0
+            m[a] = 1
         return None
 
     def combine_move(self, m1, m2):

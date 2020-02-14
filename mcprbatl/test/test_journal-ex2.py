@@ -17,9 +17,21 @@ for f in fs:
     print(" is satisfied in ")
     print(s)
 
+def matrix_2D_X(X,n):
+    ret = ''
+    ks = sorted(X)
+    i = 0
+    #n= 7
+    for k in ks:
+        i += 1
+        ret += str(k) + ':' + str(X[k]) + (', ' if i % n != 0 else '\n')
+    return ret
+
+
 #print("Table 1 in IJCAI'19 paper")
 f = fs[0]
-print(f.path_formula.pr_max(m, f.agents, f.bound)['q0'])
+X = f.path_formula.pr_max(m, f.agents, f.bound)['q0']
+print(matrix_2D_X(X,7))
 
 #print("Table 2 in IJCAI'19 paper")
 #f = fs[14]
