@@ -1,5 +1,6 @@
 import mcprbatl.model_loader as model_loader
 import mcprbatl.formula_loader as formula_loader
+import mcprbatl.formula
 
 model_file = "data/journal-ex2.model"
 formulas_file = "data/journal-ex2-test1.formulas"
@@ -32,6 +33,8 @@ def matrix_2D_X(X,n):
 f = fs[0]
 X = f.path_formula.pr_max(m, f.agents, f.bound)['q0']
 print(matrix_2D_X(X,7))
+print("State counter: ", mcprbatl.formula.Formula.state_counter)
+print("Transition counter: ", mcprbatl.formula.Formula.transition_counter)
 
 #print("Table 2 in IJCAI'19 paper")
 #f = fs[14]

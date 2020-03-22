@@ -1,3 +1,6 @@
+import mcprbatl
+
+
 class Model:
     def __init__(self):
         self.n = 1
@@ -115,6 +118,7 @@ class Model:
         maximum = -float('inf') if not min_mode else float('inf')
         proponent_moves = self.D(agents, state)
         opponents = self.all_agents().difference(agents)
+        mcprbatl.formula.Formula.state_counter += len(sub_sat)
         for p_m in proponent_moves:
             c = self.move_cost(agents, state, p_m)
             if self.cost_leq(c, bound):
@@ -126,6 +130,7 @@ class Model:
                     m_list = [m[i] for i in range(1, self.n+1)]
                     pr = 0.0
                     for t in sub_sat:
+                        mcprbatl.formula.Formula.transition_counter += 1
                         x = X[t][str(bound1)]
                         tran = 0.0
                         if state in self.delta and str(m_list) in self.delta[state] and t in self.delta[state][str(m_list)]:
@@ -141,6 +146,7 @@ class Model:
         maximum = -float('inf') if not min_mode else float('inf')
         proponent_moves = self.D(agents, state)
         opponents = self.all_agents().difference(agents)
+        mcprbatl.formula.Formula.state_counter += len(sub_sat)
         for p_m in proponent_moves:
             c = self.move_cost(agents, state, p_m)
             if self.cost_leq(c, bound):
@@ -151,6 +157,7 @@ class Model:
                     m_list = [m[i] for i in range(1, self.n+1)]
                     pr = 0.0
                     for t in sub_sat:
+                        mcprbatl.Formula.transition_counter += 1
                         x = 1.0
                         tran = 0.0
                         if state in self.delta and str(m_list) in self.delta[state] and t in self.delta[state][str(m_list)]:

@@ -1,6 +1,5 @@
 from enum import Enum, auto
-from mcprbatl.model import Model
-
+import mcprbatl
 
 class ComOp(Enum):
     LT = auto()
@@ -31,13 +30,16 @@ class ComOp(Enum):
             return ComOp.LT
 
 class Formula:
+    state_counter = 0
+    transition_counter = 0
+
     def __init__(self):
         raise TypeError("Not allow to create instances of Formula")
 
     def to_string(self, enclosed=False) -> str:
         pass
 
-    def sat(self, model: Model) -> set:
+    def sat(self, model: mcprbatl.model.Model) -> set:
         pass
 
     def __str__(self):
@@ -54,8 +56,10 @@ class TopFormula(Formula):
             s = "(" + s + ")"
         return s
 
-    def sat(self, model:Model):
-        return set(model.Q)
+    def sat(self, model:mcprbatl.model.Model):
+        r = set(model.Q)
+        Formula.state_counter += len(r)
+        return r
 
 
 class PropositionFormula(Formula):
@@ -68,15 +72,17 @@ class PropositionFormula(Formula):
             s = "(" + s + ")"
         return s
 
-    def sat(self, model:Model):
-        return set(model.pi[self.name])
+    def sat(self, model:mcprbatl.model.Model):
+        r = set(model.pi[self.name])
+        Formula.state_counter += len(r)
+        return r
 
 
 class NegationFormula(Formula):
     def __init__(self, sub: Formula):
         self.sub = sub
 
-    def sat(self, model:Model):
+    def sat(self, model:mcprbatl.model.Model):
         return model.Q.difference(self.sub.sat(model))
 
     def to_string(self, enclosed=False):
@@ -91,7 +97,7 @@ class OrFormula(Formula):
         self.sub1 = sub1
         self.sub2 = sub2
 
-    def sat(self, model:Model):
+    def sat(self, model:mcprbatl.model.Model):
         return self.sub1.sat(model).union(self.sat(model))
 
     def to_string(self, enclosed=False):
@@ -111,10 +117,10 @@ class PathFormula:
     def __str__(self):
         return self.to_string()
 
-    def pr_max(self, model: Model, agents, bound):
+    def pr_max(self, model: mcprbatl.model.Model, agents, bound):
         raise NotImplementedError()
 
-    def pr_min(self, model: Model, agents, bound):
+    def pr_min(self, model: mcprbatl.model.Model, agents, bound):
         raise NotImplementedError()
 
     def sat_geq(self, model, agents, bound, prob: float):
@@ -140,18 +146,20 @@ class NextFormula(PathFormula):
             s = "(" + s + ")"
         return s
 
-    def pr_max(self, model: Model, agents, bound):
+    def pr_max(self, model: mcprbatl.model.Model, agents, bound):
         X = dict()
         sub_sat = self.sub.sat(model)
         for s in model.Q:
             X[s] = model.pr_next_max_min(s, agents, bound, sub_sat)
+            Formula.state_counter += 1
         return X
 
-    def pr_min(self, model: Model, agents, bound):
+    def pr_min(self, model: mcprbatl.model.Model, agents, bound):
         X = dict()
         sub_sat = self.sub.sat(model)
         for s in model.Q:
             X[s] = model.pr_next_max_min(s, agents, bound, sub_sat, True)
+            Formula.state_counter += 1
         return X
 
     def sat_geq(self, model, agents, bound, prob: float):
@@ -187,7 +195,7 @@ class UntilFormula(PathFormula):
             s = "(" + s + ")"
         return s
 
-    def pr_max_inf(self, model: Model, agents, bound):
+    def pr_max_inf(self, model: mcprbatl.model.Model, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
         sat_1 = self.sub1.sat(model)
@@ -215,20 +223,13 @@ class UntilFormula(PathFormula):
                     else:
                         X1[s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X)
 
-            # for s in model.Q:
-            #     for b in bounds:
-            #         if X[s][str(b)]!=X1[s][str(b)]:
-            #             print('{state}, {str_b}: {old_X} => {new_X}'.format(state=s, str_b=str(b),
-            #                                                                 old_X=X[s][str(b)], new_X=X1[s][str(b)]))
-            #print(print_2D_X(X['q9']))
-
             if model.is_different(X1, X):
                 X = X1
             else:
                 break
         return X
 
-    def pr_min_inf(self, model: Model, state, agents, bound):
+    def pr_min_inf(self, model: mcprbatl.model.Model, state, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
         sat_1 = self.sub1.sat(model)
@@ -262,7 +263,7 @@ class UntilFormula(PathFormula):
                 break
         return X
 
-    def pr_max_fin(self, model: Model, agents, bound):
+    def pr_max_fin(self, model: mcprbatl.model.Model, agents, bound):
         X = [dict() for i in range(self.k+1)]
         bounds = model.bounds_leq(bound)
         for i in range(self.k + 1):
@@ -284,7 +285,7 @@ class UntilFormula(PathFormula):
                 break
         return X
 
-    def pr_min_fin(self, model: Model, agents, bound):
+    def pr_min_fin(self, model: mcprbatl.model.Model, agents, bound):
         X = [dict() for i in range(1, self.k+1)]
         bounds = model.bounds_leq(bound)
         for i in range(self.k + 1):
@@ -306,13 +307,13 @@ class UntilFormula(PathFormula):
                 break
         return X
 
-    def pr_max(self, model: Model, agents, bound):
+    def pr_max(self, model: mcprbatl.model.Model, agents, bound):
         if self.k != float('inf'):
             return self.pr_max_fin(model, agents, bound)
         else:
             return self.pr_max_inf(model, agents, bound)
 
-    def pr_min(self, model:Model, agents, bound):
+    def pr_min(self, model:mcprbatl.model.Model, agents, bound):
         if self.k != float('inf'):
             return self.pr_min_fin(model, agents, bound)
         else:
@@ -322,24 +323,28 @@ class UntilFormula(PathFormula):
         X = self.pr_max(model, agents, bound)
         Y = X if self.k == float('inf') else X[self.k]
         ret = {q for q in model.Q if Y[q][str(bound)] >= prob}
+        Formula.state_counter += len(model.Q)
         return ret
 
     def sat_gt(self, model, agents, bound, prob: float):
         X = self.pr_max(model, agents, bound)
         Y = X if self.k == float('inf') else X[self.k]
         ret = {q for q in model.Q if Y[q][str(bound)] > prob}
+        Formula.state_counter += len(model.Q)
         return ret
 
     def sat_lt(self, model, agents, bound, prob: float):
         X = self.pr_min(model, agents, bound)
         Y = X if self.k == float('inf') else X[self.k]
         ret = {q for q in model.Q if Y[q][str(bound)] < prob}
+        Formula.state_counter += len(model.Q)
         return ret
 
     def sat_leq(self, model, agents, bound, prob: float):
         X = self.pr_min(model, agents, bound)
         Y = X if self.k == float('inf') else X[self.k]
         ret = {q for q in model.Q if Y[q][str(bound)] <= prob}
+        Formula.state_counter += len(model.Q)
         return ret
 
 
@@ -361,7 +366,7 @@ class ATLFormula(Formula):
         self.prob = prob
         self.path_formula = path_formula
 
-    def sat(self, model: Model) -> set:
+    def sat(self, model: mcprbatl.model.Model) -> set:
         if isinstance(self.path_formula, NegPathFormula):
             f = ATLFormula(self.agents, self.bound, ComOp.reverse(self.comp_op), 1-self.prob, self.path_formula.sub)
             return f.sat(model)
