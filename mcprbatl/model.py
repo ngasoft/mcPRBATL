@@ -157,7 +157,7 @@ class Model:
                     m_list = [m[i] for i in range(1, self.n+1)]
                     pr = 0.0
                     for t in sub_sat:
-                        mcprbatl.Formula.transition_counter += 1
+                        mcprbatl.formula.Formula.transition_counter += 1
                         x = 1.0
                         tran = 0.0
                         if state in self.delta and str(m_list) in self.delta[state] and t in self.delta[state][str(m_list)]:

@@ -195,7 +195,7 @@ class UntilFormula(PathFormula):
             s = "(" + s + ")"
         return s
 
-    def pr_max_inf(self, model: mcprbatl.model.Model, agents, bound):
+    def pr_max(self, model: mcprbatl.model.Model, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
         sat_1 = self.sub1.sat(model)
@@ -210,8 +210,8 @@ class UntilFormula(PathFormula):
                     X[s][str(b)] = 0.0
                 else:
                     X[s][str(b)] = 0.0
-
-        while True:
+        t = self.k
+        while t >= 0:
             X1 = dict()
             for s in model.Q:
                 X1[s] = dict()
@@ -225,11 +225,12 @@ class UntilFormula(PathFormula):
 
             if model.is_different(X1, X):
                 X = X1
+                t -= 1
             else:
                 break
         return X
 
-    def pr_min_inf(self, model: mcprbatl.model.Model, state, agents, bound):
+    def pr_min(self, model: mcprbatl.model.Model, agents, bound):
         X = dict()
         bounds = model.bounds_leq(bound)
         sat_1 = self.sub1.sat(model)
@@ -245,7 +246,8 @@ class UntilFormula(PathFormula):
                 else:
                     X[s][str(b)] = 1.0
 
-        while True:
+        t = self.k
+        while t >= 0:
             X1 = dict()
             for s in model.Q:
                 X1[s] = dict()
@@ -259,65 +261,11 @@ class UntilFormula(PathFormula):
 
             if model.is_different(X1, X):
                 X = X1
+                t -= 1
             else:
                 break
         return X
 
-    def pr_max_fin(self, model: mcprbatl.model.Model, agents, bound):
-        X = [dict() for i in range(self.k+1)]
-        bounds = model.bounds_leq(bound)
-        for i in range(self.k + 1):
-            for s in model.Q:
-                X[i][s] = dict()
-                for b in bounds:
-                    X[i][s][str(b)] = 0
-
-        while True:
-            X1 = [dict() for i in range(self.k+1)]
-            for i in range(1, self.k + 1):
-                for s in model.Q:
-                    X1[i][s] = dict()
-                    for b in bounds:
-                        X1[i][s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X[i-1])
-            if model.is_different_k(self.k, X1, X):
-                X = X1
-            else:
-                break
-        return X
-
-    def pr_min_fin(self, model: mcprbatl.model.Model, agents, bound):
-        X = [dict() for i in range(1, self.k+1)]
-        bounds = model.bounds_leq(bound)
-        for i in range(self.k + 1):
-            for s in model.Q:
-                X[i][s] = dict()
-                for b in bounds:
-                    X[i][s][str(b)] = 1
-
-        while True:
-            X1 = [dict() for i in range(self.k + 1)]
-            for i in range(self.k + 1):
-                for s in model.Q:
-                    X1[i][s] = dict()
-                    for b in bounds:
-                        X1[i][s][str(b)] = model.pr_max_min(s, agents, b, model.Q, X[i], True)
-            if model.is_different_k(self.k, X1, X):
-                X = X1
-            else:
-                break
-        return X
-
-    def pr_max(self, model: mcprbatl.model.Model, agents, bound):
-        if self.k != float('inf'):
-            return self.pr_max_fin(model, agents, bound)
-        else:
-            return self.pr_max_inf(model, agents, bound)
-
-    def pr_min(self, model:mcprbatl.model.Model, agents, bound):
-        if self.k != float('inf'):
-            return self.pr_min_fin(model, agents, bound)
-        else:
-            return self.pr_min_inf(model, agents, bound)
 
     def sat_geq(self, model, agents, bound, prob: float):
         X = self.pr_max(model, agents, bound)

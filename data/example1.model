@@ -1,0 +1,25 @@
+Structure Example1 = {
+    2, # number of agents
+    2, # number of resources
+    { q1, q2, q3, q4 }, # states
+    {p,q,r}, # propositions
+    { # labelling function
+        p -> {q1,q2},
+        q -> {q3,q4}
+    },
+    { # availabile function
+        (q1,1) -> 2,
+        (q1,2) -> 2,
+        (q2,1) -> 2,
+        (q2,2) -> 2
+    },
+    { # costing function
+        (q1,1,2) -> (1,1),
+        (q1,2,2) -> (2,2)
+    },
+    { # transition function
+        (q1,(1,2)) -> {q2:0.3, q3:0.4, q4: 0.3},
+        (q1,(2,1)) -> {q2:0.6, q3:0.3, q4: 0.1},
+        (q1,(2,2)) -> {q4:1.0}
+    }
+}

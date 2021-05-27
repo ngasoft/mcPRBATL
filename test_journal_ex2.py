@@ -2,10 +2,10 @@ import mcprbatl.model_loader as model_loader
 import mcprbatl.formula_loader as formula_loader
 import mcprbatl.formula
 
-model_file = "data/journal-ex2.model"
-formulas_file = "data/journal-ex2-test1.formulas"
-#formulas_file = "data/journal-ex2-test2.formulas"
-#formulas_file = "data/journal-ex2-test3.formulas"
+model_file = "experiment/data/journal-ex2.model"
+formulas_file = "experiment/data/journal-ex2-test1.formulas"
+#formulas_file = "experiment/data/journal-ex2-test2.formulas"
+#formulas_file = "experiment/data/journal-ex2-test3.formulas"
 loader = model_loader.ModelLoader(model_file)
 m = loader.load()
 # print(m)
