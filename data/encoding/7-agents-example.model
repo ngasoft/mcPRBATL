@@ -9,7 +9,7 @@ mediumburnt -> {q10},
 highburnt -> {q12},
 completelyburnt -> {q13}
 },
-{ #Available function
+{ #Available functions
 (q0,1) -> 2,
 (q0,2) -> 2,
 (q0,3) -> 2,
