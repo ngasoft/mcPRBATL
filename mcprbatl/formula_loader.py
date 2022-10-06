@@ -1,3 +1,4 @@
+#formulae loader
 from antlr4 import *
 from mcprbatl.parser.formula.PRBATLFormulaLexer import PRBATLFormulaLexer
 from mcprbatl.parser.formula.PRBATLFormulaParser import PRBATLFormulaParser
